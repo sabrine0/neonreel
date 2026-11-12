@@ -1,0 +1,12 @@
+node_modules
+.next
+.data
+.env
+.env.local
+next-env.d.ts
+*.tsbuildinfo
+
+.tts
+
+# Private notes, not part of the project.
+TEARDOWN.md
