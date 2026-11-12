@@ -56,6 +56,32 @@ export async function appendClip(first: string, next: string, out: string): Prom
   await ffmpeg(["-i", first, "-i", next, "-filter_complex", filter, "-map", "[v]", ...ENCODE, out]);
 }
 
+/**
+ * Fits a video into a frame of another shape without cutting anything off:
+ * the whole picture is centred over a blurred, enlarged copy of itself.
+ * Sound is kept.
+ */
+export async function fitClip(clip: string, out: string, width: number, height: number): Promise<void> {
+  const shape = await shapeOf(clip);
+  const size = `${width}:${height}`;
+  const sameShape = Math.abs(shape.width / shape.height - width / height) < 0.02;
+  const filter = sameShape
+    ? `[0:v]scale=${size},setsar=1[v]`
+    : `[0:v]split[a][b];` +
+      `[a]scale=${size}:force_original_aspect_ratio=increase,crop=${size},boxblur=24:2,eq=brightness=-0.12[bg];` +
+      `[b]scale=${size}:force_original_aspect_ratio=decrease[fg];` +
+      `[bg][fg]overlay=(W-w)/2:(H-h)/2,setsar=1[v]`;
+  await ffmpeg([
+    "-i", clip,
+    "-filter_complex", filter,
+    "-map", "[v]", "-map", "0:a?",
+    "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "20", "-preset", "veryfast",
+    "-c:a", "aac", "-b:a", "160k",
+    "-movflags", "+faststart",
+    out,
+  ]);
+}
+
 export async function reverseClip(clip: string, out: string): Promise<void> {
   await ffmpeg(["-i", clip, "-vf", "reverse", ...ENCODE, out]);
 }

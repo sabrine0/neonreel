@@ -1,5 +1,6 @@
 "use client";
 
+import { ShareDialog } from "./ShareDialog";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ASPECTS,
@@ -815,9 +816,18 @@ function StoryCard({ story, onDelete, onResume, onRedo, onEdit }: StoryCardProps
   const active = story.status === "running" || story.status === "joining";
   const badge = STATUS_BADGE[story.status];
   const current = activeScene(story);
+  const [sharing, setSharing] = useState(false);
 
   return (
     <Card className="overflow-hidden">
+      {sharing && story.outputUrl && (
+        <ShareDialog
+          file={story.outputUrl}
+          about={[story.title, ...story.scenes.map((scene) => scene.narration || scene.prompt)].join(". ")}
+          name={story.title}
+          onClose={() => setSharing(false)}
+        />
+      )}
       {story.status === "done" && story.outputUrl && (
         <video
           src={story.outputUrl}
@@ -849,6 +859,15 @@ function StoryCard({ story, onDelete, onResume, onRedo, onEdit }: StoryCardProps
               >
                 Download
               </a>
+            )}
+            {story.status === "done" && story.outputUrl && (
+              <Button
+                size="sm"
+                onClick={() => setSharing(true)}
+                title="Get this video ready for TikTok, Instagram, YouTube or X"
+              >
+                Share
+              </Button>
             )}
             {story.status === "failed" && (
               <Button variant="primary" size="sm" onClick={onResume}>

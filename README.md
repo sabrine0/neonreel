@@ -36,6 +36,10 @@ all generated on your graphics card. No subscription, no credits, no uploads.
 | 🛠️ | **Clip tools** | Extend +5s, Smooth motion (48 fps), Loop, Reverse, Slow motion. |
 | 🔍 | **Picture tools** | Upscale 2x, Remove background. |
 | 💡 | **Prompt help** | "Improve prompt" rewrites your idea with more detail. "Surprise me" gives you one to start from. |
+| 🤖 | **Assistant** | Chat in your own words: "make a 4-scene story about a robot who learns to paint". A local language model starts the work. |
+| 🔌 | **AI connector (MCP)** | Let Claude or any MCP-capable AI app create pictures, clips and stories in Neonreel. |
+| 📲 | **Share** | One click resizes a video for TikTok, Instagram Reels, YouTube Shorts, YouTube or X, writes a caption with hashtags, and opens the upload page. |
+| 🖥️ | **Desktop window** | Run it as its own app window instead of a browser tab. |
 | 📚 | **Library** | Everything you made, with search, filters and favourites. |
 
 ## 📸 Screenshots
@@ -83,6 +87,24 @@ running, builds the app the first time, and opens http://localhost:4000.
 After changing the code, rebuild once: `pwsh -File start.ps1 -Rebuild`.
 For development with live reload: `npm run dev`.
 
+### As a desktop window
+
+Double-click **Neonreel Desktop.cmd**, or run `npm run desktop`. It opens
+Neonreel in its own window and starts the server and ComfyUI if needed. It runs
+from this folder; there is no installer yet.
+
+### Connect an AI app (MCP)
+
+While Neonreel is running, any app that speaks the Model Context Protocol can
+use it. For Claude Code:
+
+```
+claude mcp add --transport http neonreel http://localhost:4000/api/mcp
+```
+
+Tools: `create_image`, `create_video`, `create_story`, `list_library`,
+`get_status`. The endpoint only answers programs on this computer.
+
 ## 📦 What it needs
 
 | Need | Used for | Where |
@@ -91,7 +113,7 @@ For development with live reload: `npm run dev`.
 | FFmpeg | joining clips, mixing voice, subtitles, clip tools | on PATH |
 | NVIDIA GPU, 16 GB tested | all real image and video generation | |
 | ComfyUI | runs the models | `%USERPROFILE%\ComfyUI`, port 8188 |
-| Ollama (optional) | "Write the scenes", "Improve prompt" | port 11434, any chat model |
+| Ollama (optional) | "Write the scenes", "Improve prompt", Assistant, captions | port 11434, any chat model |
 | Python 3.12 (optional) | the voice | `.tts` folder, see below |
 
 ### Model files (in `ComfyUI/models`)
@@ -131,6 +153,11 @@ releases page) in `.tts\models`.
 - **Clip tools** (under each video): Extend +5s continues the clip from its last
   frame, Smooth motion doubles the frame rate, Loop, Reverse and Slow motion
   need no graphics card.
+- **Assistant**: chat with the local language model (needs Ollama). It is a
+  small model: it sometimes misunderstands or answers in the wrong language.
+- **Share** (under each video and finished story): choose a platform, press
+  Prepare, then download the video, copy the caption and open the upload page.
+  You post it yourself; Neonreel never connects to your accounts.
 - **Voice**: text to speech as an MP3, with several voices for dialogue.
 - **Library**: everything made so far.
 
@@ -168,6 +195,8 @@ A full 20-scene example is in `stories/love-story.txt`.
 - `src/lib/catalog.ts`: models, camera presets, styles, voices. Add a model here.
 - `src/lib/providers/`: one file per backend (`comfy`, `ffmpeg`, `fal`, `mock`).
 - `src/lib/stories.ts`: the story pipeline.
+- `src/lib/agent.ts`: the tools shared by the Assistant and the MCP endpoint.
+- `desktop/`: the Electron window.
 - `src/lib/render.ts`: FFmpeg joining, voice mixing, subtitles.
 - `src/components/ui.tsx` and `src/app/globals.css`: the design system.
 - `.data/`: the library (one JSON file plus media). Single user, no login.

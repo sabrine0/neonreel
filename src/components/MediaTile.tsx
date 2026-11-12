@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { MODELS, getCamera, getModel } from "@/lib/catalog";
 import type { Generation } from "@/lib/types";
 import { MotionPlayer } from "./MotionPlayer";
+import { ShareDialog } from "./ShareDialog";
 import { ConfirmDelete, ProgressBar } from "./ui";
 
 interface Props {
@@ -49,6 +51,7 @@ export function MediaTile({
     ...(gen.kind === "video" ? [`${gen.duration}s`, getCamera(gen.cameraId).name] : []),
   ].join(" · ");
   const done = gen.status === "done" && Boolean(gen.outputUrl);
+  const [sharing, setSharing] = useState(false);
 
   return (
     <article className="animate-rise group relative mb-4 break-inside-avoid overflow-hidden rounded-xl border border-line bg-panel transition-colors duration-200 focus-within:border-edge hover:border-edge">
@@ -156,6 +159,16 @@ export function MediaTile({
               View
             </button>
           )}
+          {done && gen.outputType === "video" && (
+            <button
+              type="button"
+              onClick={() => setSharing(true)}
+              title="Get this clip ready for TikTok, Instagram, YouTube or X"
+              className={`${ACTION} bg-white/10 backdrop-blur hover:bg-white/20`}
+            >
+              Share
+            </button>
+          )}
           {done && gen.outputType !== "motion" && (
             <a
               href={gen.outputUrl}
@@ -170,6 +183,14 @@ export function MediaTile({
           </span>
         </div>
       </div>
+      {sharing && gen.outputUrl && (
+        <ShareDialog
+          file={gen.outputUrl}
+          about={gen.prompt}
+          name={`neonreel-${gen.id.slice(0, 8)}`}
+          onClose={() => setSharing(false)}
+        />
+      )}
     </article>
   );
 }
