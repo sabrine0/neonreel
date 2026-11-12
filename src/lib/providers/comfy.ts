@@ -389,15 +389,20 @@ export const comfyProvider: Provider = {
     const id = gen.job.promptId;
     const res = await fetch(`${COMFY_URL}/history/${encodeURIComponent(id)}`);
     if (!res.ok) throw new Error(`ComfyUI history returned ${res.status}`);
-    const entry = ((await res.json()) as Record<string, HistoryEntry>)[id];
+    let entry = ((await res.json()) as Record<string, HistoryEntry>)[id];
     const elapsed = Date.now() - gen.createdAt;
 
+    if (!entry && elapsed > LOST_JOB_GRACE_MS && !(await isQueued(id))) {
+      // Not in the queue either. It may have finished between the two questions,
+      // so look at the history once more before calling it lost.
+      const again = await fetch(`${COMFY_URL}/history/${encodeURIComponent(id)}`);
+      if (!again.ok) throw new Error(`ComfyUI history returned ${again.status}`);
+      entry = ((await again.json()) as Record<string, HistoryEntry>)[id];
+      if (!entry) return { status: "failed", error: "ComfyUI lost this job (was it restarted?)." };
+    }
+
     if (!entry) {
-      // No history yet: the job is either still queued/running, or ComfyUI
-      // forgot it (restart). Waiting in a long queue is normal, so ask.
-      if (elapsed > LOST_JOB_GRACE_MS && !(await isQueued(id))) {
-        return { status: "failed", error: "ComfyUI lost this job (was it restarted?)." };
-      }
+      // No history yet: the job is still queued or running.
       // ComfyUI reports no percentage over HTTP; estimate, never reaching 100%.
       const speed = getModel(gen.modelId)?.speed ?? 100;
       const seconds = gen.modelId === EXTEND_MODEL_ID ? EXTEND_SECONDS : gen.duration;
