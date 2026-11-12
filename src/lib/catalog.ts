@@ -1,3 +1,4 @@
+// Neonreel - made by sabrine0 (https://github.com/sabrine0)
 export type Kind = "image" | "video";
 export type Aspect = "16:9" | "9:16" | "1:1" | "4:3" | "3:4";
 

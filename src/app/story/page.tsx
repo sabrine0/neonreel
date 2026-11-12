@@ -1,3 +1,4 @@
+// Neonreel - made by sabrine0 (https://github.com/sabrine0)
 import { StoryStudio } from "@/components/StoryStudio";
 import { getAvailability, missingModelIds, ollamaModels, realModels } from "@/lib/availability";
 import { CHARACTER_MODEL_ID } from "@/lib/catalog";

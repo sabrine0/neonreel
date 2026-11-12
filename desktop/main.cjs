@@ -1,3 +1,4 @@
+// Neonreel - made by sabrine0 (https://github.com/sabrine0)
 // Neonreel as a desktop app: its own window instead of a browser tab.
 // Starts ComfyUI and the app server if they are not already running.
 // Run with:  npm run desktop   (or double-click "Neonreel Desktop.cmd")

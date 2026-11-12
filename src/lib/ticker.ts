@@ -1,3 +1,4 @@
+// Neonreel - made by sabrine0 (https://github.com/sabrine0)
 const TICK_MS = 5000;
 
 type TickerHost = typeof globalThis & { __neonreelTicker?: ReturnType<typeof setInterval> };

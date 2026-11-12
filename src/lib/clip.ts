@@ -1,3 +1,4 @@
+// Neonreel - made by sabrine0 (https://github.com/sabrine0)
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 

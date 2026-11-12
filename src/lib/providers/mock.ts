@@ -1,3 +1,4 @@
+// Neonreel - made by sabrine0 (https://github.com/sabrine0)
 import { ASPECT_SIZE } from "../catalog";
 import { saveFile } from "../store";
 import type { Generation } from "../types";

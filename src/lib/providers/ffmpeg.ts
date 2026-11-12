@@ -1,3 +1,4 @@
+// Neonreel - made by sabrine0 (https://github.com/sabrine0)
 import { LOOP_MODEL_ID, REVERSE_MODEL_ID, SLOW_MODEL_ID } from "../catalog";
 import { loopClip, reverseClip, slowClip } from "../clip";
 import { filePath } from "../store";

@@ -1,3 +1,4 @@
+// Neonreel - made by sabrine0 (https://github.com/sabrine0)
 import { randomUUID } from "node:crypto";
 import { getAvailability, missingModelIds, realModels } from "./availability";
 import {

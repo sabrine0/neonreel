@@ -1,3 +1,4 @@
+// Neonreel - made by sabrine0 (https://github.com/sabrine0)
 import { ASPECTS, CAMERAS, STYLES, VOICES, getModel } from "./catalog";
 import { createGeneration, fileName, RequestError } from "./generations";
 import { getGeneration, getStory, listGenerations, listStories } from "./store";

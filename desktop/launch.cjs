@@ -1,3 +1,4 @@
+// Neonreel - made by sabrine0 (https://github.com/sabrine0)
 // Starts the desktop window. Terminals inside editors such as VS Code set
 // ELECTRON_RUN_AS_NODE, which makes Electron behave as plain Node and fail to
 // open a window, so it is removed here first.

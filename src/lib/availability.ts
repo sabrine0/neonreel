@@ -1,3 +1,4 @@
+// Neonreel - made by sabrine0 (https://github.com/sabrine0)
 import { MODELS, type Kind, type ModelDef } from "./catalog";
 import { COMFY_URL, comfyAvailable, comfyBusy } from "./providers/comfy";
 

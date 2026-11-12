@@ -1,3 +1,4 @@
+// Neonreel - made by sabrine0 (https://github.com/sabrine0)
 /** Ready-made stories in the script format (see script.ts), offered as starting points. */
 export interface ExampleStory {
   id: string;

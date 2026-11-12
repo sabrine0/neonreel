@@ -1,3 +1,4 @@
+// Neonreel - made by sabrine0 (https://github.com/sabrine0)
 import { randomUUID } from "node:crypto";
 import { ASPECTS, costOf, getCamera, getModel, type Aspect } from "./catalog";
 import { providerFor } from "./providers";

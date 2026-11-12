@@ -1,3 +1,4 @@
+// Neonreel - made by sabrine0 (https://github.com/sabrine0)
 import { NextResponse } from "next/server";
 import { publicView, removeGeneration } from "@/lib/generations";
 import { getGeneration, updateGeneration } from "@/lib/store";

@@ -1,3 +1,4 @@
+# Neonreel - made by sabrine0 (https://github.com/sabrine0)
 # Starts everything Neonreel needs and opens it in the browser.
 #   1. ComfyUI (images and video on the graphics card), if it is not already running
 #   2. The app, built for production, on http://localhost:4000

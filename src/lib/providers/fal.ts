@@ -1,3 +1,4 @@
+// Neonreel - made by sabrine0 (https://github.com/sabrine0)
 import { getCamera, type Aspect } from "../catalog";
 import { readFile } from "../store";
 import type { Generation } from "../types";

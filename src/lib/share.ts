@@ -1,3 +1,4 @@
+// Neonreel - made by sabrine0 (https://github.com/sabrine0)
 /** Where a finished video can be published, and the shape each place wants. */
 export interface Platform {
   id: string;

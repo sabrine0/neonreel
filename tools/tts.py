@@ -1,3 +1,4 @@
+# Neonreel - made by sabrine0 (https://github.com/sabrine0)
 """Speaks narration lines with Kokoro and writes one WAV per line.
 
 Usage: python tts.py <job.json>

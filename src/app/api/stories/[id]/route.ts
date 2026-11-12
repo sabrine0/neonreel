@@ -1,3 +1,4 @@
+// Neonreel - made by sabrine0 (https://github.com/sabrine0)
 import { NextResponse } from "next/server";
 import { RequestError } from "@/lib/generations";
 import { removeStory, resumeStory, storyView } from "@/lib/stories";

@@ -1,3 +1,4 @@
+// Neonreel - made by sabrine0 (https://github.com/sabrine0)
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {

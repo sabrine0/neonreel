@@ -1,3 +1,4 @@
+// Neonreel - made by sabrine0 (https://github.com/sabrine0)
 import { Studio } from "@/components/Studio";
 import { getAvailability, missingModelIds, ollamaModels } from "@/lib/availability";
 import { getCamera } from "@/lib/catalog";

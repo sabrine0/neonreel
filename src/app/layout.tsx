@@ -1,3 +1,4 @@
+// Neonreel - made by sabrine0 (https://github.com/sabrine0)
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import Link from "next/link";

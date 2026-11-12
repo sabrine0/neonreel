@@ -1,3 +1,4 @@
+// Neonreel - made by sabrine0 (https://github.com/sabrine0)
 "use client";
 
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";

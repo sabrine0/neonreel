@@ -1,3 +1,4 @@
+// Neonreel - made by sabrine0 (https://github.com/sabrine0)
 import { NextResponse } from "next/server";
 import { OLLAMA_URL, ollamaModels } from "@/lib/availability";
 import { getVoice, narrationWords } from "@/lib/catalog";

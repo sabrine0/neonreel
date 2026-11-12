@@ -1,3 +1,4 @@
+// Neonreel - made by sabrine0 (https://github.com/sabrine0)
 import fs from "node:fs";
 import path from "node:path";
 import type { Generation, Story } from "./types";

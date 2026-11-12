@@ -1,3 +1,4 @@
+// Neonreel - made by sabrine0 (https://github.com/sabrine0)
 import Link from "next/link";
 import { MotionPlayer } from "@/components/MotionPlayer";
 import { Reveal } from "@/components/Reveal";

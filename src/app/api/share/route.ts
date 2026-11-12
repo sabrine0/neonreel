@@ -1,3 +1,4 @@
+// Neonreel - made by sabrine0 (https://github.com/sabrine0)
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { OLLAMA_URL, ollamaModels, ollamaPlacement } from "@/lib/availability";
