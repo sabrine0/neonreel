@@ -1,5 +1,5 @@
 import { MODELS, type Kind, type ModelDef } from "./catalog";
-import { COMFY_URL, comfyAvailable } from "./providers/comfy";
+import { COMFY_URL, comfyAvailable, comfyBusy } from "./providers/comfy";
 
 export type Availability = Record<ModelDef["provider"], boolean>;
 
@@ -50,6 +50,15 @@ export function realModels(kind: Kind, available: Availability, missing: string[
       available[m.provider] &&
       !missing.includes(m.id),
   );
+}
+
+/**
+ * Extra Ollama options for a request made right now. While pictures or video
+ * are rendering, the graphics card is full: loading the language model onto it
+ * as well can freeze the render, so it runs on the processor instead (slower).
+ */
+export async function ollamaPlacement(): Promise<{ num_gpu?: number }> {
+  return (await comfyBusy()) ? { num_gpu: 0 } : {};
 }
 
 /** Names of the models the local Ollama server has, or [] when it is not running. */

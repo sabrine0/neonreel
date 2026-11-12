@@ -53,12 +53,19 @@ const WAN_SIZE: Record<Aspect, [number, number]> = {
   "3:4": [832, 1088],
 };
 
+/**
+ * ComfyUI can stop answering for a while when the graphics card is overloaded.
+ * A poll gives up after this long and is tried again on the next one, so the
+ * app's own pages keep loading.
+ */
+const POLL_TIMEOUT_MS = 6000;
+
 /** A just-submitted job may not be listed yet; only call it lost after this. */
 const LOST_JOB_GRACE_MS = 60 * 1000;
 
 /** True while ComfyUI still has the job waiting or running. */
 async function isQueued(promptId: string): Promise<boolean> {
-  const res = await fetch(`${COMFY_URL}/queue`);
+  const res = await fetch(`${COMFY_URL}/queue`, { signal: AbortSignal.timeout(POLL_TIMEOUT_MS) });
   if (!res.ok) throw new Error(`ComfyUI queue returned ${res.status}`);
   const queue = (await res.json()) as { queue_running?: unknown[][]; queue_pending?: unknown[][] };
   // Each queue item is [number, prompt_id, ...].
@@ -277,12 +284,31 @@ async function upload(name: string): Promise<string | undefined> {
   return body.subfolder ? `${body.subfolder}/${body.name}` : body.name;
 }
 
+/** True while ComfyUI is rendering or has work waiting (or is too busy to say). */
+export async function comfyBusy(): Promise<boolean> {
+  try {
+    const res = await fetch(`${COMFY_URL}/queue`, { signal: AbortSignal.timeout(2000) });
+    if (!res.ok) return false;
+    const queue = (await res.json()) as { queue_running?: unknown[]; queue_pending?: unknown[] };
+    return (queue.queue_running?.length ?? 0) + (queue.queue_pending?.length ?? 0) > 0;
+  } catch (err) {
+    return err instanceof Error && err.name === "TimeoutError";
+  }
+}
+
+/** While it renders, ComfyUI can take seconds to answer; a recent yes is trusted this long. */
+const SEEN_UP_MS = 2 * 60 * 1000;
+let lastSeenUp = 0;
+
 export async function comfyAvailable(): Promise<boolean> {
   try {
     const res = await fetch(`${COMFY_URL}/system_stats`, { signal: AbortSignal.timeout(1500) });
+    if (res.ok) lastSeenUp = Date.now();
     return res.ok;
-  } catch {
-    return false;
+  } catch (err) {
+    // A refused connection means it is not running. Only slowness is forgiven.
+    const timedOut = err instanceof Error && err.name === "TimeoutError";
+    return timedOut && Date.now() - lastSeenUp < SEEN_UP_MS;
   }
 }
 
@@ -387,7 +413,9 @@ export const comfyProvider: Provider = {
 
   async check(gen) {
     const id = gen.job.promptId;
-    const res = await fetch(`${COMFY_URL}/history/${encodeURIComponent(id)}`);
+    const res = await fetch(`${COMFY_URL}/history/${encodeURIComponent(id)}`, {
+      signal: AbortSignal.timeout(POLL_TIMEOUT_MS),
+    });
     if (!res.ok) throw new Error(`ComfyUI history returned ${res.status}`);
     let entry = ((await res.json()) as Record<string, HistoryEntry>)[id];
     const elapsed = Date.now() - gen.createdAt;
@@ -395,7 +423,9 @@ export const comfyProvider: Provider = {
     if (!entry && elapsed > LOST_JOB_GRACE_MS && !(await isQueued(id))) {
       // Not in the queue either. It may have finished between the two questions,
       // so look at the history once more before calling it lost.
-      const again = await fetch(`${COMFY_URL}/history/${encodeURIComponent(id)}`);
+      const again = await fetch(`${COMFY_URL}/history/${encodeURIComponent(id)}`, {
+        signal: AbortSignal.timeout(POLL_TIMEOUT_MS),
+      });
       if (!again.ok) throw new Error(`ComfyUI history returned ${again.status}`);
       entry = ((await again.json()) as Record<string, HistoryEntry>)[id];
       if (!entry) return { status: "failed", error: "ComfyUI lost this job (was it restarted?)." };
@@ -421,7 +451,7 @@ export const comfyProvider: Provider = {
       subfolder: file.subfolder ?? "",
       type: file.type ?? "output",
     });
-    const media = await fetch(`${COMFY_URL}/view?${query}`);
+    const media = await fetch(`${COMFY_URL}/view?${query}`, { signal: AbortSignal.timeout(60_000) });
     if (!media.ok) throw new Error(`Could not fetch the result (${media.status})`);
     const data = Buffer.from(await media.arrayBuffer());
 

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { OLLAMA_URL, ollamaModels } from "@/lib/availability";
+import { OLLAMA_URL, ollamaModels, ollamaPlacement } from "@/lib/availability";
 
 export const dynamic = "force-dynamic";
 
@@ -34,7 +34,7 @@ export async function POST(req: Request) {
         stream: false,
         // Unload straight away so the GPU memory is free for image and video models.
         keep_alive: 0,
-        options: { temperature: 0.7 },
+        options: { temperature: 0.7, ...(await ollamaPlacement()) },
         messages: [
           { role: "system", content: system },
           { role: "user", content: prompt },

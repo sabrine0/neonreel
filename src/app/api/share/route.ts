@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
-import { OLLAMA_URL, ollamaModels } from "@/lib/availability";
+import { OLLAMA_URL, ollamaModels, ollamaPlacement } from "@/lib/availability";
 import { fitClip } from "@/lib/clip";
 import { getPlatform, type Platform } from "@/lib/share";
 import { filePath, readFile } from "@/lib/store";
@@ -23,7 +23,7 @@ async function writeCaption(about: string, platform: Platform): Promise<string> 
         model,
         stream: false,
         keep_alive: 0,
-        options: { temperature: 0.8 },
+        options: { temperature: 0.8, ...(await ollamaPlacement()) },
         messages: [
           {
             role: "system",

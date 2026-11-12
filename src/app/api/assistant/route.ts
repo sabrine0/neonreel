@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { AGENT_TOOLS, runTool } from "@/lib/agent";
-import { OLLAMA_URL, ollamaModels } from "@/lib/availability";
+import { OLLAMA_URL, ollamaModels, ollamaPlacement } from "@/lib/availability";
 
 export const dynamic = "force-dynamic";
 
@@ -55,13 +55,13 @@ export async function POST(req: Request) {
       const res = await fetch(`${OLLAMA_URL}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        signal: AbortSignal.timeout(120_000),
+        signal: AbortSignal.timeout(240_000),
         body: JSON.stringify({
           model,
           stream: false,
           // Unload straight away so the GPU memory is free for image and video models.
           keep_alive: 0,
-          options: { temperature: 0.4 },
+          options: { temperature: 0.4, ...(await ollamaPlacement()) },
           messages,
           tools: AGENT_TOOLS.map((tool) => ({
             type: "function",
