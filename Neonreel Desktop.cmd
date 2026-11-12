@@ -1,4 +1,5 @@
 @echo off
+rem Neonreel - made by sabrine0 (https://github.com/sabrine0)
 rem Opens Neonreel in its own window. Run "npm install" once first.
 cd /d "%~dp0"
 if not exist node_modules (
