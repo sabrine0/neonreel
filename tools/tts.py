@@ -5,7 +5,7 @@ Usage: python tts.py <job.json>
 job.json: {"voice": "af_heart", "speed": 1.0, "lines": [{"text": "...", "out": "C:/path/a.wav"}]}
 A line may carry its own "voice", which overrides the job's.
 
-Called by src/lib/render.ts. Loads the model once for the whole batch.
+Called by backend/neonreel/render.py. Loads the model once for the whole batch.
 """
 
 import json

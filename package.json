@@ -1,28 +1,17 @@
 {
   "name": "neonreel",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
+  "description": "Local AI studio: images, video clips and narrated story videos on your own GPU",
+  "author": "sabrine0 (https://github.com/sabrine0)",
+  "license": "MIT",
+  "main": "desktop/main.cjs",
   "scripts": {
-    "dev": "next dev -p 4000",
-    "build": "next build",
-    "start": "next start -p 4000",
-    "typecheck": "tsc --noEmit",
-    "desktop": "node desktop/launch.cjs"
-  },
-  "dependencies": {
-    "next": "^16.4.6",
-    "react": "^19.3.1",
-    "react-dom": "^19.3.1"
+    "desktop": "node desktop/launch.cjs",
+    "build": "npm --prefix frontend run build",
+    "dev": "npm --prefix frontend run dev"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.3.5",
-    "@types/node": "^26.6.6",
-    "@types/react": "^19.3.0",
-    "@types/react-dom": "^19.3.0",
-    "electron": "^45.3.1",
-    "tailwindcss": "^4.3.5",
-    "typescript": "^7.0.2"
-  },
-  "main": "desktop/main.cjs",
-  "author": "sabrine0 (https://github.com/sabrine0)"
+    "electron": "^45.3.1"
+  }
 }

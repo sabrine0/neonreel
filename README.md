@@ -7,8 +7,9 @@
 Type an idea. Get images, video clips, and full narrated story videos,
 all generated on your graphics card. No subscription, no credits, no uploads.
 
-![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=nextdotjs)
+![Python](https://img.shields.io/badge/Python-FastAPI-3776ab?logo=python&logoColor=white)
 ![React](https://img.shields.io/badge/React-19-38d6ff?logo=react&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-8-646cff?logo=vite&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6?logo=typescript&logoColor=white)
 ![ComfyUI](https://img.shields.io/badge/runs%20on-ComfyUI-ff4fd8)
 ![Local](https://img.shields.io/badge/100%25-local-38d6ff)
@@ -37,7 +38,7 @@ all generated on your graphics card. No subscription, no credits, no uploads.
 | 🔍 | **Picture tools** | Upscale 2x, Remove background. |
 | 💡 | **Prompt help** | "Improve prompt" rewrites your idea with more detail. "Surprise me" gives you one to start from. |
 | 🤖 | **Assistant** | Chat in your own words: "make a 4-scene story about a robot who learns to paint". A local language model starts the work. |
-| 🔌 | **AI connector (MCP)** | Let Claude or any MCP-capable AI app create pictures, clips and stories in Neonreel. |
+| 🔌 | **AI connector (MCP)** | Let any AI app that speaks MCP create pictures, clips and stories in Neonreel. |
 | 📲 | **Share** | One click resizes a video for TikTok, Instagram Reels, YouTube Shorts, YouTube or X, writes a caption with hashtags, and opens the upload page. |
 | 🖥️ | **Desktop window** | Run it as its own app window instead of a browser tab. |
 | 📚 | **Library** | Everything you made, with search, filters and favourites. |
@@ -68,24 +69,30 @@ the test laptop.
 
 - **You need an NVIDIA graphics card with about 16 GB of memory.** Neonreel was
   built and tested on one machine: an RTX 5080 laptop running Windows 11.
-- **The model files are about 40 GB**, downloaded separately into ComfyUI.
-- The one-click launcher is Windows only. On other systems start ComfyUI
-  yourself, then run `npm install`, `npm run build` and `npm start`.
+- **The model files are about 55 GB.** The setup downloads them for you.
+- The setup and launcher are for Windows. On other systems follow the manual
+  steps at the end of this section.
 - Without a graphics card the app opens, but only the two demo models and the
   Loop, Reverse and Slow motion tools work.
 
-## 🚀 Start it
+## 🚀 Install and start
 
 ```
 git clone https://github.com/sabrine0/neonreel.git
 cd neonreel
 ```
 
-Then double-click **Start Neonreel.cmd**. It starts ComfyUI if it is not
-running, builds the app the first time, and opens http://localhost:4000.
+1. Double-click **Setup Neonreel.cmd**, once. It checks for Git, Python,
+   Node.js and FFmpeg (and offers to install missing ones), installs the app,
+   installs ComfyUI, downloads every model file and the voice files, and sets
+   up Ollama with a small language model. It can be run again at any time:
+   finished steps are skipped and stopped downloads resume.
+2. Double-click **Start Neonreel.cmd**. It starts ComfyUI if it is not running
+   and opens http://localhost:4000.
 
-After changing the code, rebuild once: `pwsh -File start.ps1 -Rebuild`.
-For development with live reload: `npm run dev`.
+Short on disk or time? `powershell -File setup.ps1 -ModelFilter flux` downloads
+only the picture model (17 GB); `-SkipModels`, `-SkipComfy` and `-SkipOllama`
+skip those parts.
 
 ### As a desktop window
 
@@ -96,27 +103,42 @@ from this folder; there is no installer yet.
 ### Connect an AI app (MCP)
 
 While Neonreel is running, any app that speaks the Model Context Protocol can
-use it. For Claude Code:
+use it. Point the app at:
 
 ```
-claude mcp add --transport http neonreel http://localhost:4000/api/mcp
+http://localhost:4000/api/mcp
 ```
 
 Tools: `create_image`, `create_video`, `create_story`, `list_library`,
 `get_status`. The endpoint only answers programs on this computer.
 
+### By hand (macOS, Linux, or if you prefer)
+
+```
+python -m venv .venv
+.venv/bin/pip install -r backend/requirements.txt kokoro-onnx soundfile
+cd frontend && npm install && npm run build && cd ..
+.venv/bin/python -m uvicorn neonreel.main:app --app-dir backend --port 4000
+```
+
+Start ComfyUI yourself on port 8188 and put the files listed in
+`tools/models.json` into its `models` folders. This path has not been tested
+outside Windows.
+
 ## 📦 What it needs
 
 | Need | Used for | Where |
 |---|---|---|
-| Node.js 22+ | the app | on PATH |
+| Python 3.10+ | the server and the voice | on PATH |
+| Node.js 20+ | building the interface, the desktop window | on PATH |
 | FFmpeg | joining clips, mixing voice, subtitles, clip tools | on PATH |
 | NVIDIA GPU, 16 GB tested | all real image and video generation | |
 | ComfyUI | runs the models | `%USERPROFILE%\ComfyUI`, port 8188 |
 | Ollama (optional) | "Write the scenes", "Improve prompt", Assistant, captions | port 11434, any chat model |
-| Python 3.12 (optional) | the voice | `.tts` folder, see below |
 
 ### Model files (in `ComfyUI/models`)
+
+The setup downloads these. The exact addresses are in `tools/models.json`.
 
 | File | Folder | For |
 |---|---|---|
@@ -132,15 +154,10 @@ Tools: `create_image`, `create_video`, `create_story`, `list_library`,
 | `birefnet.safetensors` | `background_removal` | Remove background |
 | `film_net_fp16.safetensors` | `frame_interpolation` | Smooth motion |
 
-### Voice (optional)
+### Voice
 
-```
-python -m venv .tts
-.tts\Scripts\python -m pip install kokoro-onnx soundfile
-```
-
-Then put `kokoro-v1.0.onnx` and `voices-v1.0.bin` (from the kokoro-onnx
-releases page) in `.tts\models`.
+The setup installs the Kokoro voice engine and puts `kokoro-v1.0.onnx` and
+`voices-v1.0.bin` in `.tts/models`.
 
 ## 🎮 Using it
 
@@ -184,7 +201,9 @@ A full 20-scene example is in `stories/love-story.txt`.
 
 | Layer | Tech |
 |---|---|
-| App | Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4 |
+| Server | Python, FastAPI, httpx |
+| Interface | React 19, Vite, TypeScript, Tailwind CSS v4, React Router |
+| Desktop window | Electron |
 | Images | FLUX.1 schnell, FLUX.1 Kontext dev |
 | Video | Wan 2.2 TI2V 5B, with the FastWan LoRA for 4-step rendering |
 | Tools | Real-ESRGAN, BiRefNet, FILM frame interpolation |
@@ -192,14 +211,30 @@ A full 20-scene example is in `stories/love-story.txt`.
 | Scene writing | any Ollama chat model |
 | Assembly | FFmpeg |
 
-- `src/lib/catalog.ts`: models, camera presets, styles, voices. Add a model here.
-- `src/lib/providers/`: one file per backend (`comfy`, `ffmpeg`, `fal`, `mock`).
-- `src/lib/stories.ts`: the story pipeline.
-- `src/lib/agent.ts`: the tools shared by the Assistant and the MCP endpoint.
-- `desktop/`: the Electron window.
-- `src/lib/render.ts`: FFmpeg joining, voice mixing, subtitles.
-- `src/components/ui.tsx` and `src/app/globals.css`: the design system.
-- `.data/`: the library (one JSON file plus media). Single user, no login.
+```
+backend/neonreel/      the server
+  main.py              every /api route, and serving the built interface
+  catalog.py           models, camera moves, voices, looks
+  generations.py       single pictures and clips
+  stories.py           the story pipeline (stills, clips, join)
+  render.py, clip.py   FFmpeg: joining, voice mixing, subtitles, clip tools
+  writer.py            what the language model writes: scenes, prompts, captions
+  agent.py             the tools shared by the Assistant and the MCP endpoint
+  providers/           one file per backend: comfy, ffmpeg, fal, mock
+frontend/src/          the interface
+  pages/               one file per screen
+  components/          the screens' parts; ui.tsx is the design system
+  lib/catalog.ts       the interface's copy of the catalog
+desktop/               the Electron window
+tools/                 the voice script and the list of model downloads
+.data/                 your library (one JSON file plus media). Single user, no login.
+```
+
+To work on the interface with live reload: start the server, then run
+`npm run dev` in `frontend/` and open http://localhost:5173.
+
+Adding a model means adding it in two places: `backend/neonreel/catalog.py`
+and `frontend/src/lib/catalog.ts`.
 
 ## 🚧 Limits
 
@@ -208,6 +243,8 @@ A full 20-scene example is in `stories/love-story.txt`.
 - Voices are voice-over: mouths do not move with the words.
 - Experimental: the hosted option (fal.ai, `FAL_KEY` in `.env.local`) is
   written but has never been run against the real service.
+- The setup script has been run in parts on one computer, never from zero on a
+  clean one.
 - The layout is made for a desktop screen. Phones have not been tested.
 - There are no automated tests yet.
 

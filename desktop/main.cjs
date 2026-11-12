@@ -13,10 +13,11 @@ const ROOT = path.join(__dirname, "..");
 const PORT = Number(process.env.NEONREEL_PORT) || 4000;
 const APP_URL = `http://localhost:${PORT}`;
 const COMFY_URL = (process.env.COMFY_URL || "http://127.0.0.1:8188").replace(/\/$/, "");
-const NEXT_BIN = path.join(ROOT, "node_modules", "next", "dist", "bin", "next");
+const VENV_PYTHON = process.platform === "win32" ? ".venv/Scripts/python.exe" : ".venv/bin/python";
+const SERVER_PYTHON = path.join(ROOT, VENV_PYTHON);
 
-/** Processes this window started, stopped again when it closes. */
-const children = [];
+/** The app server, if this window started it. Stopped again when the window closes. */
+let server = null;
 
 async function isUp(url) {
   try {
@@ -35,21 +36,9 @@ async function waitFor(url, seconds) {
   return false;
 }
 
-/** Runs the Next.js command line with Electron's own Node, so Node need not be on PATH. */
-function next(args) {
-  const child = spawn(process.execPath, [NEXT_BIN, ...args], {
-    cwd: ROOT,
-    env: { ...process.env, ELECTRON_RUN_AS_NODE: "1", PORT: String(PORT) },
-    stdio: "ignore",
-    windowsHide: true,
-  });
-  children.push(child);
-  return child;
-}
-
 function startComfy() {
   const comfy = path.join(os.homedir(), "ComfyUI");
-  const python = path.join(comfy, ".venv", process.platform === "win32" ? "Scripts/python.exe" : "bin/python");
+  const python = path.join(comfy, VENV_PYTHON);
   if (!fs.existsSync(python)) return;
   // Left running when the window closes: a render may still be in progress.
   spawn(python, ["main.py", "--listen", "127.0.0.1", "--port", "8188", "--disable-auto-launch"], {
@@ -62,23 +51,26 @@ function startComfy() {
 
 function page(message) {
   const html = `<body style="margin:0;height:100vh;display:grid;place-items:center;background:#07080f;color:#fff;font:500 18px system-ui">
-    <div style="text-align:center"><div style="font-size:28px;font-weight:700;margin-bottom:12px">
+    <div style="text-align:center;max-width:34rem;padding:2rem"><div style="font-size:28px;font-weight:700;margin-bottom:12px">
     <span style="color:#38d6ff">Neon</span><span style="color:#ff4fd8">reel</span></div>${message}</div></body>`;
   return `data:text/html;charset=utf-8,${encodeURIComponent(html)}`;
 }
 
-async function startServer(win) {
-  if (await isUp(APP_URL)) return true;
-  if (!(await isUp(`${COMFY_URL}/system_stats`))) startComfy();
-
-  if (!fs.existsSync(path.join(ROOT, ".next", "BUILD_ID"))) {
-    await win.loadURL(page("Building the app, about a minute. This happens once."));
-    const code = await new Promise((resolve) => next(["build"]).on("exit", resolve));
-    if (code !== 0) return false;
+/** Makes sure the app server answers. Returns a message for the user if it cannot. */
+async function startServer() {
+  if (await isUp(`${APP_URL}/api/status`)) return null;
+  if (!fs.existsSync(SERVER_PYTHON)) {
+    return 'Neonreel is not installed yet. Double-click "Setup Neonreel.cmd" in the project folder first.';
   }
-  await win.loadURL(page("Starting…"));
-  next(["start", "-p", String(PORT)]);
-  return waitFor(APP_URL, 60);
+  if (!(await isUp(`${COMFY_URL}/queue`))) startComfy();
+
+  server = spawn(
+    SERVER_PYTHON,
+    ["-m", "uvicorn", "neonreel.main:app", "--app-dir", "backend", "--host", "127.0.0.1", "--port", String(PORT), "--log-level", "warning"],
+    { cwd: ROOT, env: { ...process.env, PORT: String(PORT) }, stdio: "ignore", windowsHide: true },
+  );
+  if (await waitFor(`${APP_URL}/api/status`, 60)) return null;
+  return 'Neonreel could not start. Run "Start Neonreel.cmd" to see the error.';
 }
 
 async function open() {
@@ -106,11 +98,8 @@ async function open() {
   });
 
   await win.loadURL(page("Starting…"));
-  if (!(await startServer(win))) {
-    await win.loadURL(page("Neonreel could not start. Run <code>npm run build</code> in the project folder to see why."));
-    return;
-  }
-  await win.loadURL(APP_URL);
+  const problem = await startServer();
+  await win.loadURL(problem ? page(problem) : APP_URL);
 
   // Used by the project's own check: save a picture of the window, then quit.
   if (process.env.NEONREEL_SHOT) {
@@ -123,5 +112,5 @@ async function open() {
 app.whenReady().then(open);
 app.on("window-all-closed", () => app.quit());
 app.on("quit", () => {
-  for (const child of children) child.kill();
+  if (server) server.kill();
 });
