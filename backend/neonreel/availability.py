@@ -55,15 +55,24 @@ def real_models(kind: str, available: dict[str, bool], missing: list[str]) -> li
     ]
 
 
+#: The last list Ollama gave, used when it is too busy to answer in time.
+_ollama_models: list[str] = []
+
+
 async def ollama_models() -> list[str]:
     """Names of the models the local Ollama server has, or [] when it is not running."""
+    global _ollama_models
     try:
-        res = await http().get(f"{OLLAMA_URL}/api/tags", timeout=1.5)
+        res = await http().get(f"{OLLAMA_URL}/api/tags", timeout=httpx.Timeout(3, connect=1))
         if res.status_code != 200:
             return []
-        return [m["name"] for m in res.json().get("models") or [] if m.get("name")]
+        _ollama_models = [m["name"] for m in res.json().get("models") or [] if m.get("name")]
+    except (httpx.ReadTimeout, httpx.WriteTimeout, httpx.PoolTimeout):
+        # It is running but the computer is too loaded for it to answer: keep what it said last.
+        pass
     except (httpx.HTTPError, ValueError):
-        return []
+        _ollama_models = []
+    return _ollama_models
 
 
 async def language_model() -> str | None:

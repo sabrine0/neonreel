@@ -344,7 +344,7 @@ async def interface(path: str) -> Response:
         # Built files carry a hash in their name, so they never change.
         cache = "public, max-age=31536000, immutable" if path.startswith("assets/") else "no-cache"
         return FileResponse(target, headers={"Cache-Control": cache})
-    if path.startswith("assets/"):
+    if path.startswith(("assets/", "_next/")):
         # A missing built file must not be answered with the page: the browser would try to run it.
         return Response("Not found", status_code=404)
     return FileResponse(index, headers={"Cache-Control": "no-cache"})
