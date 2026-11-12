@@ -23,5 +23,6 @@
     "tailwindcss": "^4.3.5",
     "typescript": "^7.0.2"
   },
-  "main": "desktop/main.cjs"
+  "main": "desktop/main.cjs",
+  "author": "sabrine0 (https://github.com/sabrine0)"
 }

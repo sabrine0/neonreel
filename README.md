@@ -223,4 +223,6 @@ is for non-commercial use only.
 
 If Neonreel is useful to you, a ⭐ on the repository helps other people find it.
 
+Made by [sabrine0](https://github.com/sabrine0)
+
 </div>
